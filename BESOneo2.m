@@ -57,13 +57,18 @@ function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     Ke0     = reshape(Ke0,8,8);
     Ke0     = Ke0+Ke0'-diag(diag(Ke0));                                     % recover full element K matrix
 % C) Loads, supports & passive domains
-    elNrs   = reshape(1:nEl, ny, nx);                                       % simplifies specification of pasS and pasV
-    lcDof   = 2*nodeNrs(ny/2+1,nx+1);                                       % DOFs with applied load
-    fixed   = 1:2*(ny+1);                                                   % fixed DOFs
-    [pasS,pasV] = deal([],[elNrs(f)]);                                              % passive solid and void elements
-    F       = fsparse(lcDof',1,-1,[nDof,1]);                                % define load vector
-    free    = setdiff(1:nDof,fixed);                                        % set of free DOFs
-    act     = setdiff((1:nEl)',union(pasS,pasV));                           % set of active elements
+    fixed   = [1:2:2*(ny+1), nDof];
+    [pasS,pasV] = deal([],[]);
+    F       = fsparse(2,1,-1,[nDof,1]);        
+    free    = setdiff(1:nDof,fixed);                                      
+    act     = setdiff((1:nEl)',union(pasS,pasV)); 
+%     elNrs   = reshape(1:nEl, ny, nx);                                       % simplifies specification of pasS and pasV
+%     lcDof   = 2*nodeNrs(ny/2+1,nx+1);                                       % DOFs with applied load
+%     fixed   = 1:2*(ny+1);                                                   % fixed DOFs
+%     [pasS,pasV] = deal([],[]);                                              % passive solid and void elements
+%     F       = fsparse(lcDof',1,-1,[nDof,1]);                                % define load vector
+%     free    = setdiff(1:nDof,fixed);                                        % set of free DOFs
+%     act     = setdiff((1:nEl)',union(pasS,pasV));                           % set of active elements
 % D) Prepare filter
     [dy,dx] = meshgrid(-ceil(rmin)+1:ceil(rmin)-1,-ceil(rmin)+1:ceil(rmin)-1);
     h       = max(0, rmin-sqrt(dx.^2+dy.^2));                               % discretized gaussian filter kernel
@@ -71,7 +76,7 @@ function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     [x,dsK] = deal(ones(nEl, 1), zeros(nEl, 1));                            % initialize vectors
     x(pasV) = xmin;                                                         % set x = xmin on pasV set
     [ch, loop, vol, U] = deal(1, 0, sum(x,'all')/nEl, zeros(nDof,1));
-    while ch > 1e-5 && loop<maxit
+    while ch > 1e-6 && loop<maxit
         loop    = loop+1;                                                   % update loop counter
         vol     = max(vol*(1-er), volfrac);
         if loop > 1; olddc = dc; end
@@ -106,11 +111,17 @@ function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     xfinal = reshape(x, ny, nx);
 end    
 
+%% Cantilever example
+%
+%     fixed   = [1:2*(ny+1)];
+%     [pasS,pasV] = deal([],[]);
+%     F = fsparse(nDof,1,-1,[nDof,1]);
+%     free    = setdiff(1:nDof,fixed);                                      
+%     act     = setdiff((1:nEl)',union(pasS,pasV)); 
+
 %% Frame reinforcement problem as presented in: 
 % "A new generation 99 line Matlab code for compliance topology 
 % optimization and its extension to 3D" by Ferrari and Sigmund, 2020, pp.11
-%
-% Replace section C with the following:
 %
 %     elNrs   = reshape(1:nEl, ny, nx);
 %     [lDofv,lDofh] = deal(2*nodeNrs(1,:),2*nodeNrs(:,end)-1);
@@ -124,8 +135,7 @@ end
 %     free    = setdiff(1:nDof,fixed);                                      
 %     act     = setdiff((1:nEl)',union(pasS,pasV));                        
 
-%%  L-bracket
-% Replace section C with the following:
+%%  L-bracket example
 %
 %     elNrs   = reshape(1:nEl, ny, nx);
 %     [lDofv,lDofh] = deal(2*nodeNrs(1,:),2*nodeNrs(:,end)-1);
@@ -136,7 +146,16 @@ end
 %     free    = setdiff(1:nDof,fixed);                                      
 %     act     = setdiff((1:nEl)',union(pasS,pasV)); 
 
+%%  MBB beam example
+%
+%     fixed   = [1:2:2*(ny+1), nDof-1:nDof];
+%     [pasS,pasV] = deal([],[]);
+%     F = fsparse(2,1,-1,[nDof,1]);
+%     free    = setdiff(1:nDof,fixed);                                      
+%     act     = setdiff((1:nEl)',union(pasS,pasV)); 
+
 %% Specification of circular non-design void
+%
 %     [cx, cy, cr] = deal(nx/2, ny/2, ny/3);
 %     [dy,dx] = meshgrid(1:nx, 1:ny);
 %     f = sqrt((dx-cy).^2+(dy-cx).^2) < cr;
