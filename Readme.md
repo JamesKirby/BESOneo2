@@ -26,7 +26,7 @@ Add the following to code section C
     [pasS, pasV] = deal([],[elNrs(f)]);
 ```
 Calling BESOneo with `[x, obj] = BESOneo2(800,400,0.3,0.02,8)` results in:
-![Passive Void example](https://octodex.github.com/images/yaktocat.png)
+![Passive Void example](images/passive_void.png)
 
 ## Dependencies
 

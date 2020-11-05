@@ -26,7 +26,7 @@
 %               https://github.com/stefanengblom/stenglib. 
 %               ___________________________________________________________
 %
-function [x, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
+function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     bcF     = 'symmetric';                                                  % imfilter option (zero-Neumann filter boundary)
     penal   = 3;                                                            % penalty exponent for material interpolation
     xmin    = 1e-3;                                                         % material density of void elements
@@ -57,9 +57,6 @@ function [x, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     Ke0     = reshape(Ke0,8,8);
     Ke0     = Ke0+Ke0'-diag(diag(Ke0));                                     % recover full element K matrix
 % C) Loads, supports & passive domains
-    [cx, cy, cr] = deal(nx/2, ny/2, ny/3);
-    [dy,dx] = meshgrid(1:nx, 1:ny);
-    f = sqrt((dx-cy).^2+(dy-cx).^2) < cr;
     elNrs   = reshape(1:nEl, ny, nx);                                       % simplifies specification of pasS and pasV
     lcDof   = 2*nodeNrs(ny/2+1,nx+1);                                       % DOFs with applied load
     fixed   = 1:2*(ny+1);                                                   % fixed DOFs
@@ -106,6 +103,7 @@ function [x, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
         colormap(gray); imagesc(reshape(x<1, ny, nx));
         axis equal tight off; drawnow;
     end
+    xfinal = reshape(x, ny, nx);
 end    
 
 %% Frame reinforcement problem as presented in: 
@@ -137,3 +135,8 @@ end
 %     F = fsparse(lDofh(2*ceil(ny/3)+1)+1,1,-1,[nDof,1]);
 %     free    = setdiff(1:nDof,fixed);                                      
 %     act     = setdiff((1:nEl)',union(pasS,pasV)); 
+
+%% Specification of circular non-design void
+%     [cx, cy, cr] = deal(nx/2, ny/2, ny/3);
+%     [dy,dx] = meshgrid(1:nx, 1:ny);
+%     f = sqrt((dx-cy).^2+(dy-cx).^2) < cr;
