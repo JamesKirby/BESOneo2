@@ -30,7 +30,7 @@ function [x, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     bcF     = 'symmetric';                                                  % imfilter option (zero-Neumann filter boundary)
     penal   = 3;                                                            % penalty exponent for material interpolation
     xmin    = 1e-3;                                                         % material density of void elements
-    maxit   = 200;                                                          % maximum number of iterations allowed
+    maxit   = 150;                                                          % maximum number of iterations allowed
 % A) Material paramaters
     E0      = 1;                                                            % Young modulus of solid
     Emin    = 1e-6;                                                         % Young modulus of "void"
@@ -74,7 +74,7 @@ function [x, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     [x,dsK] = deal(ones(nEl, 1), zeros(nEl, 1));                            % initialize vectors
     x(pasV) = xmin;                                                         % set x = xmin on pasV set
     [ch, loop, vol, U] = deal(1, 0, sum(x,'all')/nEl, zeros(nDof,1));
-    while ch > 1e-5 && loop<maxit
+    while ch > 1e-4 && loop<maxit
         loop    = loop+1;                                                   % update loop counter
         vol     = max(vol*(1-er), volfrac);
         if loop > 1; olddc = dc; end
@@ -103,7 +103,7 @@ function [x, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
         end
         fprintf( 'It.:%7i Obj:%7.4f Vol:%7.3f ch.:%0.2e \n', ...
             loop, obj(loop), vol, ch); 
-        colormap(gray); imagesc(reshape(x<1, ny, nx));
+        colormap(gray); imagesc(reshape(x, ny, nx));
         axis equal tight off; drawnow;
     end
 end    
