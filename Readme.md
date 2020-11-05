@@ -1,10 +1,15 @@
 # BESOneo2
 A fast and efficient BESO topology optimization function for 2D minimum compliance topology optimization subject to a volume constraint.
-
 ![MBB beam example](images/mbbbeam.png)
 ## About
 
 2D Bi-Directional Evolutionary Topology Optimization (BESO) for computing the optimal minimum compliance structure subject to a given volume constraint. BESO is based on the code by [Huang, X., & Xie, Y. M. (2010)](https://doi.org/10.1002/9780470689486), and significant speedups are realized through reduced indexing and efficient matrix construction as detailed in [Ferrari, F., & Sigmund, O. (2020)](https://doi.org/10.1007/s00158-020-02629-w).
+
+## Getting Started
+
+A basic cantilever example can be called using
+`[x, obj] = BESOneo2(400,200,0.3,0.02,3);`
+Definitions for a frame reinforcement problem, L-bracket and MBB beam are included in `BESOneo2.m` and are commented after the main code. These can replace section C or custom structures can be defined here.
 
 ### Inputs
 Parameter | Description
@@ -33,12 +38,6 @@ Calling BESOneo2 with `[x, obj] = BESOneo2(800,400,0.3,0.02,8)` results in:
 
 BESOneo uses the fast sparse matrix construction routine `fsparse` [Engblom, S., & Lukarski, D. (2016)](https://doi.org/10.1016/j.parco.2016.04.001) which is downloadable from the first authors GitHub page at: https://github.com/stefanengblom/stenglib.
 Alternately, the code can be run without dependencies by changing all `fsparse` calls to MATLABs inbuilt `sparse` function.
-
-## Getting Started
-
-A basic cantilever example can be called using
-`[x, obj] = BESOneo2(400,200,0.3,0.02,3);`
-Definitions for a frame reinforcement problem, L-bracket and MBB beam are included in `BESOneo2.m` and are commented after the main code. These can replace section C or custom structures can be defined here.
 
 ## References
 
