@@ -1,5 +1,4 @@
 %% Title:       BESOneo2 - Efficient Minimum Compliance BESO (2D)
-% Version:      1.0 (04/11/2020)
 % Author:       James Kirby, PhD Candidate, RMIT University
 %
 % Description:  BESO based on the efficient FEA implementation as presented 
@@ -13,9 +12,13 @@
 %               fsparse, and MATLABs decomposition function with cholsky
 %               factorization. 
 %
-%               Load and boundary specification can be modified in section
-%               C and passive void and solid elements (non-designable
-%               regions) can be set using pasS and pasV.
+%               The problem definition can be specified in section c using
+%               the predefinedStructure function by passing one of the
+%               following strings - "cantilever" , "frame" , "Lbracket" ,  
+%               "MBB" or "cantilever_ndr".
+%               Alternately, loads and boundary conditions can be specified 
+%               in section C with passive void and solid elements (non-
+%               designable regions) can be set using pasS and pasV.
 %
 % Notes:        This implementation uses the fsparse function as described
 %               in Engblom, S., & Lukarski, D. (2016). Fast Matlab 
@@ -27,7 +30,6 @@
 %               ___________________________________________________________
 %
 function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
-    bcF     = 'symmetric';                                                  % imfilter option (zero-Neumann filter boundary)
     penal   = 3;                                                            % penalty exponent for material interpolation
     xmin    = 1e-3;                                                         % material density of void elements
     maxit   = 200;                                                          % maximum number of iterations allowed
@@ -57,14 +59,15 @@ function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
     Ke0     = reshape(Ke0,8,8);
     Ke0     = Ke0+Ke0'-diag(diag(Ke0));                                     % recover full element K matrix
 % C) Loads, supports & passive domains
-    elNrs   = reshape(1:nEl, ny, nx);                                       % simplifies specification of pasS and pasV
-    lcDof   = 2*nodeNrs(ny/2+1,nx+1);                                       % DOFs with applied load
-    fixed   = 1:2*(ny+1);                                                   % fixed DOFs
-    [pasS,pasV] = deal([],[]);                                              % passive solid and void elements
-    F       = fsparse(lcDof',1,-1,[nDof,1]);                                % define load vector
-    free    = setdiff(1:nDof,fixed);                                        % set of free DOFs
-    act     = setdiff((1:nEl)',union(pasS,pasV));                           % set of active elements
+   [F, free, fixed, act, pasV] = predefinedStructure(nx, ny, 'cantilever');
+%     lcDof   = 2*nodeNrs(ny/2+1,nx+1);                                       % DOFs with applied load
+%     fixed   = 1:2*(ny+1);                                                   % fixed DOFs
+%     [pasS,pasV] = deal([],[]);                                              % passive solid and void elements
+%     F       = fsparse(lcDof',1,-1,[nDof,1]);                                % define load vector
+%     free    = setdiff(1:nDof,fixed);                                        % set of free DOFs
+%     act     = setdiff((1:nEl)',union(pasS,pasV));                           % set of active elements
 % D) Prepare filter
+    EC      = setEdgeConditions(fixed, F, sym, cyc);
     [dy,dx] = meshgrid(-ceil(rmin)+1:ceil(rmin)-1,-ceil(rmin)+1:ceil(rmin)-1);
     h       = max(0, rmin-sqrt(dx.^2+dy.^2));                               % discretized gaussian filter kernel
 % E) Allocate & initialize other parameters
@@ -104,54 +107,4 @@ function [xfinal, obj] = BESOneo2(nx,ny,volfrac,er,rmin)
         axis equal tight off; drawnow;
     end
     xfinal = reshape(x, ny, nx);
-end    
-
-%% Cantilever example
-%
-%     lcDof   = 2*nodeNrs(ny/2+1,nx+1);
-%     fixed   = 1:2*(ny+1);
-%     [pasS,pasV] = deal([],[]);
-%     F       = fsparse(lcDof',1,-1,[nDof,1]);
-%     free    = setdiff(1:nDof,fixed);
-%     act     = setdiff((1:nEl)',union(pasS,pasV));
-
-%% Frame reinforcement problem as presented in: 
-% "A new generation 99 line Matlab code for compliance topology 
-% optimization and its extension to 3D" by Ferrari and Sigmund, 2020, pp.11
-%
-%     elNrs   = reshape(1:nEl, ny, nx);
-%     [lDofv,lDofh] = deal(2*nodeNrs(1,:),2*nodeNrs(:,end)-1);
-%     fixed   = [1,2,nDof];
-%     a1      = elNrs(1:ny/50,:);
-%     a2      = elNrs(:,[1:nx/50,end-nx/50+1:end]);
-%     a3      = elNrs(2*ny/5:end,2*nx/5:end-nx/5);
-%     [pasS,pasV] = deal(unique([a1(:);a2(:)]),a3(:));
-%     F = fsparse(lDofv',1,-2/(nx+1),[nDof,1]) + ...
-%         fsparse(lDofh,1,[0:1/(ny).^2:1/ny]',[nDof,1]);
-%     free    = setdiff(1:nDof,fixed);                                      
-%     act     = setdiff((1:nEl)',union(pasS,pasV));                        
-
-%%  L-bracket example
-%
-%     elNrs   = reshape(1:nEl, ny, nx);
-%     [lDofv,lDofh] = deal(2*nodeNrs(1,:),2*nodeNrs(:,end)-1);
-%     fixed   = [1:2*(ny+1):nDof, 2:2*(ny+1):nDof];
-%     a3      = elNrs(1:2*ny/3,nx/2:end);
-%     [pasS,pasV] = deal([],a3(:));
-%     F = fsparse(lDofh(2*ceil(ny/3)+1)+1,1,-1,[nDof,1]);
-%     free    = setdiff(1:nDof,fixed);                                      
-%     act     = setdiff((1:nEl)',union(pasS,pasV)); 
-
-%%  MBB beam example
-%
-%     fixed   = [1:2:2*(ny+1), nDof];
-%     [pasS,pasV] = deal([],[]);
-%     F = fsparse(2,1,-1,[nDof,1]);
-%     free    = setdiff(1:nDof,fixed);                                      
-%     act     = setdiff((1:nEl)',union(pasS,pasV)); 
-
-%% Specification of circular non-design void
-%
-%     [cx, cy, cr] = deal(nx/2, ny/2, ny/3);
-%     [dy,dx] = meshgrid(1:nx, 1:ny);
-%     f = sqrt((dx-cy).^2+(dy-cx).^2) < cr;
+end
