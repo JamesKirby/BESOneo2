@@ -3,13 +3,13 @@ A fast and efficient BESO topology optimization function for 2D minimum complian
 ![MBB beam example](images/mbbbeam.png)
 ## About
 
-2D Bi-Directional Evolutionary Topology Optimization (BESO) for computing the optimal minimum compliance structure subject to a given volume constraint. BESO is based on the code by [Huang, X., & Xie, Y. M. (2010)](https://doi.org/10.1002/9780470689486), and significant speedups are realized through reduced indexing and efficient matrix construction as detailed in [Ferrari, F., & Sigmund, O. (2020)](https://doi.org/10.1007/s00158-020-02629-w).
+2D Bi-Directional Evolutionary Topology Optimization (BESO) for computing an optimal minimum compliance structure subject to a given volume constraint. BESO is based on the code by [Huang, X., & Xie, Y. M. (2010)](https://doi.org/10.1002/9780470689486), and significant speedups are realized through reduced indexing and efficient matrix construction as detailed in [Ferrari, F., & Sigmund, O. (2020)](https://doi.org/10.1007/s00158-020-02629-w).
 
 ## Getting Started
 
 A basic cantilever example can be called using
-`[x, obj] = BESOneo2(400,200,0.3,0.02,3);`
-Definitions for a frame reinforcement problem, L-bracket and MBB beam are included in `BESOneo2.m` and are commented after the main code. These can replace section C or custom structures can be defined here.
+`[x, obj] = BESOneo2(400,200,0.3,0.02,3,"cantilever");`
+Problem definitions for a cantilever, frame reinforcement problem ([Ferrari, F., & Sigmund, O. (2020)](https://doi.org/10.1007/s00158-020-02629-w)), L-bracket, Messerschmitt–Bölkow–Blohm (MBB) beam and a cantilever with non-designable region are included in `predefinedStructure.m`. Additional problem definitions can be appended to the `predefinedStructure()` function or section D in `BESOneo2()` replaced for custom definitions.
 
 ### Inputs
 Parameter | Description
@@ -18,20 +18,23 @@ Parameter | Description
 `volfrac` | volume constraint where *0 < `volfrac` <= 1*
 `er` | Evolutionary rate
 `rmin` | Sensitivity filter radius to solve mesh dependency issues
+`definition` | Problem definition
 
 ### Features
 
 Specification of non-design regions can be achieved by adding elements to the `pasS` and `pasV` sets in code section C. This will exclude the specified elements from the optimization process and set them permanently as solid or void elements.
+
+Edge conditions can be specified individually for any number of edge segments. Conditions are applied in the following order: periodic and symmetric -> load replicate -> displacement constraint replicate -> free/zero conditions.
 
 #### Example: Non-designable region
 Define `pasV` in section C as:
 ```matlab
     [cx, cy, cr] = deal(nx/2, ny/2, ny/3);
     [dy, dx] = meshgrid(1:nx, 1:ny);
-    f = sqrt((dx-cy).^2+(dy-cx).^2) < cr;
-    [pasS, pasV] = deal([],[elNrs(f)]);
+    ndr = sqrt((dx-cy).^2+(dy-cx).^2) < cr;
+    pasV = find(ndr);
 ```
-Calling BESOneo2 with `[x, obj] = BESOneo2(800,400,0.3,0.02,8)` results in:
+Calling BESOneo2 with `[x, obj] = BESOneo2(800,400,0.3,0.02,8,"cantilever_ndr")` results in:
 ![Passive Void example](images/passive_void.png)
 
 ## Dependencies
