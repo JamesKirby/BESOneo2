@@ -9,7 +9,7 @@ A fast and efficient BESO topology optimization function for 2D minimum complian
 
 A basic cantilever example can be called using
 `[x, obj] = BESOneo2(400,200,0.3,0.02,3,"cantilever");`
-Problem definitions for a cantilever, frame reinforcement problem ([Ferrari, F., & Sigmund, O. (2020)](https://doi.org/10.1007/s00158-020-02629-w)), L-bracket, Messerschmitt–Bölkow–Blohm (MBB) beam and a cantilever with non-designable region are included in `predefinedStructure.m`. Additional problem definitions can be appended to the `predefinedStructure()` function or section D in `BESOneo2()` replaced for custom definitions.
+Problem definitions for a cantilever, frame reinforcement problem ([Ferrari, F., & Sigmund, O. (2020)](https://doi.org/10.1007/s00158-020-02629-w)), L-bracket, Messerschmitt–Bölkow–Blohm (MBB) beam and a cantilever with non-designable region are included in `predefinedStructure.m`. Additional problem definitions can be appended to the `predefinedStructure` function or section D in `BESOneo2` replaced for custom definitions.
 
 ### Inputs
 Parameter | Description
