@@ -11,8 +11,8 @@
 %               symmetric -> applied loads replicate -> applied
 %               displacement constraints replicate
 %
-% Inputs:       ny          number of elements along x
-%               nx          number of elements along y
+% Inputs:       nx          number of elements along x
+%               ny          number of elements along y
 %               fixed       fixed dofs                                      indices, dof indexed
 %               F           force vector                                    sparse, dof indexed
 %               sym         symmetric boundary segments                     edge segments, node indexed

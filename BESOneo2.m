@@ -22,8 +22,8 @@
 %               code is available from the first authors GitHub page at: 
 %               https://github.com/stefanengblom/stenglib. 
 %
-% Inputs:       ny          Number of elements along x
-%               nx          Number of elements along y
+% Inputs:       nx          Number of elements along x
+%               ny          Number of elements along y
 %               volfrac     Volume constraint (0 <= volfrac <= 1)
 %               er          Evolutionary rate (typically 0.02)
 %               rmin        Filter radius

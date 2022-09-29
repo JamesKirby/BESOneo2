@@ -12,8 +12,8 @@
 %               selection in this function, or replacing section D in
 %               BESOneo2.
 %
-% Inputs:       ny          number of elements along x
-%               nx          number of elements along y
+% Inputs:       nx          number of elements along x
+%               ny          number of elements along y
 %               name        name of problem definition
 %               fopt        set true is using fsparse function of Engblom, 
 %                           S., & Lukarski, D. (2016)

@@ -19,8 +19,8 @@
 %               2: symmetric edge condition
 %               3: replicate edge condition
 %
-% Inputs:       ny          number of elements along x
-%               nx          number of elements along y
+% Inputs:       nx          number of elements along x
+%               ny          number of elements along y
 %               dc          matrix on which edge conditions are applied
 %               r           pad distance
 %               EC          edge condition matrix
